@@ -46,4 +46,21 @@ public class HelloController {
 
         return ResponseEntity.status(201).body(user);
     }
+
+    @DeleteMapping("/user/{id}")
+    public ResponseEntity<Void> deleteUser(
+            @PathVariable("id") Long id) {
+
+        userService.deleteUser(id);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/user/{id}")
+    public UserResponse updateUser(
+            @PathVariable("id") Long id,
+            @RequestBody UpdateUserRequest request) {
+
+        return userService.updateUser(id, request.getName());
+    }
 }

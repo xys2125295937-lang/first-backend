@@ -80,4 +80,57 @@ public class UserService {
 
         return user;
     }
+
+    public synchronized void deleteUser(Long id) {
+        if (id <= 0) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "用户编号必须大于0"
+            );
+        }
+
+        boolean removed = users.removeIf(
+                user -> user.getId().equals(id)
+        );
+
+        if (!removed) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "用户不存在"
+            );
+        }
+    }
+
+    public synchronized UserResponse updateUser(Long id, String name) {
+        // 复用已有方法，检查编号并确认用户存在
+        UserResponse existing = getUserById(id);
+
+        if (name == null || name.isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "姓名不能为空"
+            );
+        }
+
+        String normalizedName = name.strip();
+
+        for (UserResponse user : users) {
+            if (!user.getId().equals(id)
+                    && user.getName().equals(normalizedName)) {
+
+                throw new ResponseStatusException(
+                        HttpStatus.CONFLICT,
+                        "姓名已存在"
+                );
+            }
+        }
+
+        UserResponse updated =
+                new UserResponse(id, normalizedName);
+
+        int index = users.indexOf(existing);
+        users.set(index, updated);
+
+        return updated;
+    }
 }
